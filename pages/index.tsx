@@ -1,4 +1,5 @@
 import Greeter from "src/artifacts/contracts/Greeter.sol/Greeter.json";
+import MLToken from "src/artifacts/contracts/MLToken.sol/MLToken.json";
 import Token from "src/artifacts/contracts/Token.sol/Token.json";
 import { ethers } from "ethers";
 import { useState } from "react";
@@ -13,11 +14,13 @@ declare global {
 }
 
 // Update with the contract address logged out to the CLI when it was deployed
-const greeterAddressLocalhost = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
-const tokenAddressLocalhost = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+const greeterAddressLocalhost = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9";
+const tokenAddressLocalhost = "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9";
+const tokenErcAddressLocalhost = "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707";
 // const greeterRopstenAddress = "0x57D9A56E5Fd3298b8e7620ef35bC5F8e75a0aFd9";
 const greeterAddress = greeterAddressLocalhost;
 const tokenAddress = tokenAddressLocalhost;
+const tokenErcAddress = tokenErcAddressLocalhost;
 
 function App() {
   const [greeting, setGreetingValue] = useState("");
@@ -60,6 +63,27 @@ function App() {
     }
   }
 
+  async function getBalanceErc() {
+    if (typeof window.ethereum !== "undefined") {
+      const [account] = await window.ethereum.request({
+        method: "eth_requestAccounts",
+      });
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const contract = new ethers.Contract(tokenAddress, MLToken.abi, provider);
+      const balance = await contract.balanceOf(account);
+      console.log("Balance: ", balance.toString());
+    }
+  }
+
+  async function getTotalSupply() {
+    if (typeof window.ethereum !== "undefined") {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const contract = new ethers.Contract(tokenAddress, MLToken.abi, provider);
+      const totalSupply = await contract.totalSupply();
+      console.log("Total Supply: ", totalSupply.toString());
+    }
+  }
+
   // call the smart contract, send an update
   async function setGreeting() {
     if (!greeting) return;
@@ -89,9 +113,7 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <button onClick={requestAccount} type="button">
-          Request Account
-        </button>
+        {/* Greeter stuff */}
         <button onClick={fetchGreeting} type="button">
           Fetch Greeting
         </button>
@@ -105,6 +127,7 @@ function App() {
 
         <br />
         <br />
+        {/* Token stuff */}
         <button onClick={getBalance} type="button">
           Get Balance
         </button>
@@ -119,6 +142,16 @@ function App() {
           onChange={(e) => setAmount(e.target.value)}
           placeholder="Amount"
         />
+
+        <br />
+        <br />
+        {/* MLToken (ERC20) stuff */}
+        <button onClick={getBalanceErc} type="button">
+          Get Balance
+        </button>
+        <button onClick={getTotalSupply} type="button">
+          Total Supply
+        </button>
       </header>
     </div>
   );
